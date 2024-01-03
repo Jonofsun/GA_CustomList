@@ -1,18 +1,18 @@
 # Enhanced Tutorial: Creating a Custom List Class in C#
 
 ## Introduction
-This tutorial will guide you through creating a `CustomList` class in C#. Custom list classes are essential for handling collections of data with specific behaviors and properties. This class will manage a collection of generic objects, offering functionalities like adding, removing items, and tracking their count.
+In this tutorial, you'll learn to create a `CustomList` class in C#, a versatile tool for managing collections of generic objects. This class will feature advanced functionalities like dynamic resizing, adding items at specific indexes, and more.
 
 ## Requirements
 
 1. **Create a new console application** named `GA_CustomList_YourName`.
-2. **Follow the step-by-step instructions**.
+2. Implement the specified functionality.
 3. **Upload to GitHub** and submit the repository link in Canvas.
 
 ---
 
 ### Starting Code
-Begin with a standard console application structure in your `Program.cs` file:
+Begin with a basic console application structure in your `Program.cs` file:
 
 ```csharp
 using System;
@@ -26,121 +26,154 @@ class Program
 }
 ```
 
-We will develop our custom list class as a separate entity from the `Program` class.
+Our `CustomList` class will be a separate entity from the `Program` class.
 
 ---
 
 ### **Step 1: Creating a New Class for Custom List**
 
-1. **Create a new class file** in your project named `CustomList.cs`. This class will be generic, capable of storing any type of object.
-
-2. In `CustomList.cs`, start with:
+1. **Create a new class file** named `CustomList.cs`.
+2. Start with the following in `CustomList.cs`:
 
     ```csharp
     using System;
 
     public class CustomList<T>
     {
-        // Additional code will be added here.
-    }
-    ```
+        private T[] items;
+        private int count;
 
-    **Explanation**: `<T>` represents a generic type parameter, allowing our list to store any data type. This makes our class versatile for various data types, enhancing reusability.
+        public CustomList() : this(10) { }
 
----
-
-### **Step 2: Implementing an Add Method**
-
-1. **Define a private array** to store the items and a counter to track the number of items.
-
-2. Inside `CustomList<T>`, start constructing the `Add` method:
-
-    ```csharp
-    private T[] items = new T[4];
-    private int count;
-
-    public void Add(T item)
-    {
-        // Check if array resizing is needed
-        // Add the item
-        // Increment the count
-    }
-    ```
-
-    **Explanation**: The `Add` method will handle inserting new items into our list. We start with an initial array size and increase it as needed.
-
----
-
-### **Step 3: Expanding the Array**
-
-1. **Complete the `Add` method** to handle array resizing when it's full:
-
-    ```csharp
-    public void Add(T item)
-    {
-        if (count == items.Length)
+        public CustomList(int initialSize)
         {
-            T[] largerArray = new T[count * 2];
-            Array.Copy(items, largerArray, count);
-            items = largerArray;
+            items = new T[initialSize];
         }
 
-        items[count] = item;
+        // Additional methods will be added here.
+    }
+    ```
+
+    **Explanation**: We begin with two constructors, one default and another that allows specifying the initial size. `<T>` makes our class generic.
+
+---
+
+### **Step 2: Implementing Add and AddAtIndex Methods**
+
+1. **Implement the `Add` method**:
+
+    ```csharp
+    public void Add(T item)
+    {
+        CheckIntegrity();
+        items[count++] = item;
+    }
+    ```
+
+2. **Implement the `AddAtIndex` method**:
+
+    ```csharp
+    public void AddAtIndex(T item, int index)
+    {
+        CheckIntegrity();
+        if (index < 0 || index > count) throw new ArgumentOutOfRangeException(nameof(index));
+        for (int i = count; i > index; i--)
+        {
+            items[i] = items[i - 1];
+        }
+        items[index] = item;
         count++;
     }
     ```
 
-    **Explanation**: When the array is full (`count == items.Length`), we create a larger array and copy the existing items. This ensures our list can dynamically grow to accommodate more items.
+    **Explanation**: `Add` inserts items at the end, while `AddAtIndex` places items at a specified index. Both methods call `CheckIntegrity` to ensure there's enough space.
 
 ---
 
-### **Step 4: Creating a Remove Method**
+### **Step 3: Implementing the Remove Method**
 
-1. **Implement a method to remove an item** from the list:
+1. **Add the `Remove` method**:
 
     ```csharp
     public bool Remove(T item)
     {
-        // Find the item
-        // Shift the rest of the items down
-        // Return true if the item was removed, otherwise false
+        for (int i = 0; i < count; i++)
+        {
+            if (items[i].Equals(item))
+            {
+                for (int j = i; j < count - 1; j++)
+                {
+                    items[j] = items[j + 1];
+                }
+                count--;
+                return true;
+            }
+        }
+        return false;
     }
     ```
 
-    **Explanation**: The `Remove` method locates the specified item, removes it, and then shifts any subsequent items one position back to fill the gap.
+    **Explanation**: `Remove` searches for an item and, if found, shifts subsequent elements forward.
+
+---
+
+### **Step 4: Implementing CheckIntegrity and GetItem Methods**
+
+1. **Add the `CheckIntegrity` method**:
+
+    ```csharp
+    private void CheckIntegrity()
+    {
+        if (count >= 0.8 * items.Length)
+        {
+            T[] largerArray = new T[items.Length * 2];
+            Array.Copy(items, largerArray, count);
+            items = largerArray;
+        }
+    }
+    ```
+
+2. **Implement the `GetItem` method**:
+
+    ```csharp
+    public T GetItem(int index)
+    {
+        if (index < 0 || index >= count) throw new ArgumentOutOfRangeException(nameof(index));
+        return items[index];
+    }
+    ```
+
+    **Explanation**: `CheckIntegrity` ensures the array size is sufficient, expanding it when 80% full. `GetItem` retrieves an item by index, with bounds checking.
 
 ---
 
 ### **Step 5: Implementing a Count Property**
 
-1. **Add a property to get the current item count**:
+1. **Add a `Count` property**:
 
     ```csharp
-    public int Count
-    {
-        get { return count; }
-    }
+    public int Count => count;
     ```
 
-    **Explanation**: This property provides a way to access the number of items currently in the list. It's a fundamental aspect of list management.
+    **Explanation**: This property provides the current item count.
 
 ---
 
 ### **Step 6: Testing Your Custom List**
 
-1. **In `Program.cs`, test your CustomList** by creating an instance, adding, and removing items.
+1. **Test the `CustomList` in `Program.cs`**:
 
     ```csharp
     static void Main(string[] args)
     {
         CustomList<string> myList = new CustomList<string>();
         myList.Add("Hello");
-        myList.Add("World");
-        // Test adding more items and removing them
+        myList.AddAtIndex("World", 1);
+        // More tests for adding, removing, and retrieving items
     }
     ```
 
-    **Explanation**: Testing in the `Main` method allows you to see your `CustomList` in action. Verify that adding and removing items behaves as expected.
+    **Explanation**: Test your `CustomList`'s functionality, including add/remove operations and index-based manipulations.
 
 ---
 
@@ -148,14 +181,14 @@ We will develop our custom list class as a separate entity from the `Program` cl
 
 | Criteria | Description | Points |
 |----------|-------------|--------|
-| **Class Creation** | Proper creation of `CustomList` class with generic handling. | 20 |
-| **Add Method** | Correct `Add` method implementation including array resizing. | 20 |
-| **Remove Method** | Accurate `Remove` method implementation. | 20 |
-| **Count Property** | Proper `Count` property implementation. | 10 |
-| **Code Functionality** | Functional custom list with add/remove capabilities. | 15 |
-| **Code Readability and Comments** | Clear, readable code with explanatory comments. | 10 |
-| **Testing** | Effective testing in `Main` method. | 5 |
-| **Submission** | Successful GitHub upload and correct Canvas link submission. | 10 |
+| **Class Creation** | Proper `CustomList` class with generics and constructors. | 20 |
+| **Add/Remove Methods** | Correct implementation of add/remove methods, including index-based adding. | 20 |
+| **CheckIntegrity/GetItem Methods** | Accurate `CheckIntegrity` and `GetItem` implementations. | 20 |
+| **Count Property** | Proper implementation of `Count` property. | 10 |
+| **Functionality** | Working custom list with dynamic resizing and item management. | 15 |
+| **Readability/Comments** | Clear, readable code with comments. | 10 |
+| **Testing** | Comprehensive testing in `Main` method. | 5 |
+| **Submission** | GitHub upload and Canvas link submission. | 10 |
 | **Total** |  | 100 |
 
-This tutorial is structured to guide you through each step of implementing a custom list class, emphasizing the creation of a generic class, methods for adding and removing items, array resizing, and a count property.
+This tutorial ensures you cover all aspects of implementing a custom list class with advanced features like dynamic array resizing, adding items at specific indices, and managing items effectively.
